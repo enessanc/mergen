@@ -1,6 +1,6 @@
 # Phase A verification record
 
-- Status: In progress — awaiting GitHub Actions container verification
+- Status: Passed — real Docker validation completed in GitHub Actions
 - Date: 2026-09-12
 - Reviewer: Pending
 - Environment and versions: Ubuntu 22.04 host; CMake 3.22.1; GCC 11.4.0;
@@ -19,20 +19,19 @@ The image-build and run commands are versioned in
 
 ## Successful-path evidence
 
-The CMake fixture configures, builds, and passes natively on the host. The
-`Phase A runtime proof` GitHub Actions workflow will perform the same proof in
-a real Docker runner because no Docker-compatible runtime is installed or
-reachable by the current user.
+The CMake fixture configures, builds, and passes natively on the host. GitHub
+Actions run `34699540062` completed successfully in a real Docker runner:
+https://github.com/enessanc/mergen/actions/runs/34699540062
 
-The first workflow run (`34699462297`) built the image and passed the non-root
-and socket checks, but CTest could not execute its binary from the runner tmpfs.
-The run command now explicitly requests an executable tmpfs; the replacement
-workflow run is the required final evidence.
+The run built the image, verified its UID and socket absence, ran the fixture
+with CPU/memory/PID limits, and completed CTest successfully. An earlier run
+(`34699462297`) exposed an executable-tmpfs issue; it was fixed by explicitly
+requesting `exec` and the successful replacement run is the final evidence.
 
 ## Intentional failure-path evidence
 
-The fixture returns failure when `MERGEN_PROOF_FAIL=1`. The workflow asserts
-the same non-zero Docker exit behavior.
+The fixture returns failure when `MERGEN_PROOF_FAIL=1`. The successful workflow
+run asserts the Docker command returns non-zero for that case.
 
 ## Security and privilege checks
 
@@ -48,6 +47,6 @@ container tmpfs and is destroyed with the container.
 
 ## Known limitations and next gate
 
-Phase A cannot pass until the workflow captures successful and intentional
-failure container exits. A manual local run remains pending Docker access. Do
-not begin Phase B until the workflow result is recorded.
+Phase A exit criteria are met through the real Docker workflow. A manual local
+run remains a useful learning exercise when Docker access becomes available,
+but it is not a blocker. Phase B requires a reachable K3s/Kubernetes cluster.
