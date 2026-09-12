@@ -22,3 +22,7 @@ CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, execution_id TEXT NOT
     def get(self, execution_id: str) -> Execution | None:
         row = self.db.execute("SELECT * FROM executions WHERE id=?", (execution_id,)).fetchone()
         return None if row is None else Execution(row["id"], row["project_id"], row["work_item_id"], ExecutionState(row["state"]), __import__("datetime").datetime.fromisoformat(row["created_at"]), __import__("datetime").datetime.fromisoformat(row["updated_at"]))
+
+    def by_work_item(self, work_item_id: str) -> Execution | None:
+        row = self.db.execute("SELECT id FROM executions WHERE work_item_id=?", (work_item_id,)).fetchone()
+        return self.get(row["id"]) if row else None
