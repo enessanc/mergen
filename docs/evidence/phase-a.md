@@ -24,6 +24,11 @@ The CMake fixture configures, builds, and passes natively on the host. The
 a real Docker runner because no Docker-compatible runtime is installed or
 reachable by the current user.
 
+The first workflow run (`34699462297`) built the image and passed the non-root
+and socket checks, but CTest could not execute its binary from the runner tmpfs.
+The run command now explicitly requests an executable tmpfs; the replacement
+workflow run is the required final evidence.
+
 ## Intentional failure-path evidence
 
 The fixture returns failure when `MERGEN_PROOF_FAIL=1`. The workflow asserts

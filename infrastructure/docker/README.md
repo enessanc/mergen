@@ -19,7 +19,7 @@ docker build --tag mergen/cpp-cmake:0.1 infrastructure/docker/cpp-cmake
 docker run --rm --init \
   --user 10001:10001 \
   --read-only \
-  --tmpfs /tmp:rw,nosuid,nodev,size=512m \
+  --tmpfs /tmp:rw,exec,nosuid,nodev,size=512m \
   --network none \
   --cap-drop ALL \
   --security-opt no-new-privileges \
