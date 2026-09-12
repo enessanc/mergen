@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mergen-core
+  namespace: mergen
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: mergen-core}
+  template:
+    metadata:
+      labels: {app: mergen-core}
+    spec:
+      serviceAccountName: mergen-core
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: core
+          image: ghcr.io/enessanc/mergen:dev
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 8080, name: http}]
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+          volumeMounts: [{name: tmp, mountPath: /tmp}]
+      volumes:
+        - name: tmp
+          emptyDir: {medium: Memory, sizeLimit: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mergen-core
+  namespace: mergen
+spec:
+  selector: {app: mergen-core}
+  ports: [{name: http, port: 8080, targetPort: http}]

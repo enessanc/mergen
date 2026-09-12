@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "runtime": {"image": "ghcr.io/example/agent-runtime@sha256:<digest>"},
+  "harness": {"name": "codex", "executable": "codex", "arguments": ["exec"]},
+  "validation": [["pytest", "-q"]],
+  "git": {"base_branch": "dev-agent", "branch_prefix": "agent/"},
+  "resources": {"cpu": "2", "memory": "4Gi", "timeout_seconds": 1800}
+}

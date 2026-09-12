@@ -12,6 +12,10 @@
 .mergen/local/
 .mergen/workspaces/
 .mergen/artifacts/
+*.db
+.venv/
+__pycache__/
+*.egg-info/
 
 # Editor and operating-system files
 .DS_Store
