@@ -1,0 +1,20 @@
+# Secrets and local credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*kubeconfig*
+
+# Local Mergen execution state and ephemeral workspaces
+.mergen/local/
+.mergen/workspaces/
+.mergen/artifacts/
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*~
