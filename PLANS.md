@@ -85,6 +85,8 @@ Kubernetes administrative credential is required.
 **Exit:** an entire disposable task is represented by Job/Pod lifecycle. Do not
 introduce Helm, operators, service mesh, or production multi-node scope.
 
+**Evidence:** [Phase B verification record](docs/evidence/phase-b.md) — passed.
+
 ## Phase C — Mergen Core skeleton
 
 **Objective:** build the deterministic Python control plane around the proven
