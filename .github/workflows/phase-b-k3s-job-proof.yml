@@ -22,7 +22,9 @@ jobs:
         run: |
           curl --fail --location --silent --show-error "https://github.com/k3d-io/k3d/releases/download/${K3D_VERSION}/k3d-linux-amd64" --output "$RUNNER_TEMP/k3d"
           curl --fail --location --silent --show-error "https://github.com/k3d-io/k3d/releases/download/${K3D_VERSION}/checksums.txt" --output "$RUNNER_TEMP/checksums.txt"
-          (cd "$RUNNER_TEMP" && grep ' k3d-linux-amd64$' checksums.txt | sha256sum --check)
+          expected_checksum="$(awk '$2 == "_dist/k3d-linux-amd64" { print $1 }' "$RUNNER_TEMP/checksums.txt")"
+          test -n "$expected_checksum"
+          printf '%s  %s\n' "$expected_checksum" "$RUNNER_TEMP/k3d" | sha256sum --check
           chmod 0755 "$RUNNER_TEMP/k3d"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: Create a single-node K3s cluster
@@ -45,4 +47,4 @@ jobs:
           kubectl --namespace mergen-runtime-proof wait --for=condition=failed job/runtime-proof-timeout --timeout=120s
       - name: Delete cluster
         if: always()
-        run: k3d cluster delete "$CLUSTER"
+        run: command -v k3d >/dev/null && k3d cluster delete "$CLUSTER" || true
