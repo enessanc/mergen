@@ -2,11 +2,11 @@
 
 ## Origin and adaptation
 
-This procedure adapts the workflow documented in the private `enessanc/sentio`
+This procedure adapts the workflow documented in the `enessanc/sentio`
 repository: documentation-first context, dependency-ordered planning, focused
 branches, Conventional Commits, and mandatory validation before commit. Mergen
-retains those practices but requires human approval at every merge boundary to
-honor its system-level Git acceptance rule.
+uses `dev-user` as the leading human branch while retaining a separate
+agent-integration branch.
 
 `AGENTS.md` is the normative concise protocol. This document explains how to
 apply it and should evolve only through an approved ADR when the process changes.
@@ -15,20 +15,22 @@ apply it and should evolve only through an approved ADR when the process changes
 
 ```text
 Approved phase and work item
-  → agent/<work-item>-<slug>
+  → merge current dev-user into dev-agent
+  → agent/<work-item>-<slug> from dev-agent
   → implementation + deterministic validation
   → evidence record + focused Conventional Commit(s)
-  → PR to dev-agent
-  → human review and merge
-  → PR to dev-user for QA
-  → human review and merge
+  → local feature merge into dev-agent + push
+  → delete local and remote feature branch
+  → phase PR from dev-agent to dev-user
+  → human review and merge to dev-user
   → PR to main for release
   → human review, merge, and release tag
 ```
 
-No agent may merge any of these pull requests. The Mergen product's later
-Plane-to-Git automation follows the same principle: it creates a review branch
-and reports validation, while a human controls promotion.
+An agent may locally merge a verified feature branch into `dev-agent` and push
+that branch. No agent may merge a PR into `dev-user` or `main`. The Mergen
+product's later Plane-to-Git automation follows the same principle: it creates
+a review branch and reports validation, while a human controls promotion.
 
 ## Required PR description
 
@@ -60,11 +62,16 @@ commands used.
 
 ## Branch protection baseline
 
-When the GitHub repository is created, configure `main`, `dev-user`, and
-`dev-agent` as protected branches: require pull requests, at least one human
-approval, up-to-date required checks once CI exists, and prohibit force pushes
-and direct deletion. Configure the same protection semantically if another Git
-provider is later used.
+The public repository's default branch is `dev-user`. GitHub protects
+`dev-user` and `main` with pull-request-only updates, required conversation
+resolution, stale-review dismissal, no force push, no deletion, and admin
+enforcement. Required review count is zero: the human maintainer's intentional
+PR merge supplies the approval boundary in this single-account workflow.
+
+`dev-agent` is intentionally unprotected so an agent can merge its task branch
+locally and push the completed integration work. Before every task, it must
+incorporate remote `dev-user` into `dev-agent`; unresolved conflicts require
+maintainer direction. See ADR 0002.
 
 ## Commit rules
 
