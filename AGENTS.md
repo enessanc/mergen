@@ -68,24 +68,35 @@ human-acceptance boundary. It governs both human contributors and coding agents.
 
 | Branch | Purpose | Who may merge into it |
 | --- | --- | --- |
-| `main` | announced, stable releases | human maintainer only |
-| `dev-user` | human QA/staging and release-candidate integration | human maintainer only |
-| `dev-agent` | reviewed integration of agent-produced work | human maintainer only |
+| `main` | announced, stable releases | human maintainer only, through a release PR |
+| `dev-user` | default branch and leading human QA/staging integration line | human maintainer only, through a phase PR |
+| `dev-agent` | agent integration line, synchronized from `dev-user` | agent |
 | `agent/<work-item>-<slug>` | one isolated implementation task | never a merge target |
 
-Create every task branch from the current `dev-agent`. An agent may commit and
-push its own task branch and open a pull request into `dev-agent` only when that
-operation has been explicitly authorized for the task. It must never commit,
-push, merge, or force-push `dev-agent`, `dev-user`, or `main` directly.
+`dev-user` is the repository's default branch. GitHub protects `dev-user` and
+`main`: a pull request is required, direct and force pushes are prohibited, and
+the branches cannot be deleted. The required approval count is zero so the sole
+human maintainer can merge a PR created through their GitHub account.
+
+Before starting any task, an agent fetches the remote and merges the current
+`origin/dev-user` into local `dev-agent`; it pushes that synchronization before
+creating a task branch. If the merge conflicts, stop and request maintainer
+direction. Create every task branch from the resulting current `dev-agent`.
+
+An agent may commit and push `dev-agent` and its own task branches, but it must
+never commit, push, merge, or force-push `dev-user` or `main` directly. At task
+completion it merges the feature branch locally into `dev-agent`, pushes
+`dev-agent`, and deletes the feature branch both locally and remotely. A
+feature branch is not a pull-request target.
 
 The expected promotion path is:
 
-`agent/<work-item>-<slug> → PR → dev-agent → human-reviewed PR → dev-user → human-reviewed PR → main`
+`dev-user → sync → dev-agent → agent/<work-item>-<slug> → local merge → dev-agent → phase PR → dev-user → release PR → main`
 
-The temporary exception in Sentio that allowed agents to merge into its agent
-integration branch is intentionally **not** adopted. It would conflict with
-Mergen's system baseline: Git review and explicit human approval are the final
-acceptance boundary.
+At the end of each completed phase, the agent opens one PR from `dev-agent` to
+`dev-user`; only the human maintainer may merge it. `main` changes only when a
+human maintainer opens and merges a release PR from `dev-user`. This preserves
+Git review and explicit human approval as the final acceptance boundary.
 
 ### Task procedure
 
@@ -94,8 +105,10 @@ acceptance boundary.
 2. Confirm the work belongs to the currently approved phase. Record a new ADR
    before choosing a consequential architecture, security, persistence, or
    external-interface direction.
-3. Create one task branch with its work-item identifier. Keep the change small
-   and scoped; do not combine unrelated refactors.
+3. Fetch `origin`, merge `origin/dev-user` into local `dev-agent`, and push the
+   synchronized integration branch. Create one task branch with its work-item
+   identifier. Keep the change small and scoped; do not combine unrelated
+   refactors.
 4. Implement the task and its deterministic tests together. Run the phase's
    prescribed validation, including a relevant intentional failure check where
    practical.
@@ -108,9 +121,11 @@ acceptance boundary.
    `docs(phase-0): define Git promotion workflow` or
    `feat(runner): create Kubernetes Job manifest`. Separate unrelated code,
    tests, and documentation into logical commits when feasible.
-8. Push only the task branch and open a PR with scope, validation commands and
-   results, failure-path evidence, security impact, linked work item/ADR, and
-   known limitations. A maintainer performs review and every merge.
+8. Merge the verified feature branch locally into `dev-agent`, push
+   `dev-agent`, then delete the feature branch locally and remotely. At phase
+   completion, open a `dev-agent` to `dev-user` PR with scope, validation
+   commands/results, failure-path evidence, security impact, linked work
+   item/ADR, and known limitations. A maintainer performs that merge.
 
 ### Pull-request gate
 
