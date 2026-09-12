@@ -60,11 +60,17 @@ commands used.
 
 ## Branch protection baseline
 
-When the GitHub repository is created, configure `main`, `dev-user`, and
-`dev-agent` as protected branches: require pull requests, at least one human
-approval, up-to-date required checks once CI exists, and prohibit force pushes
-and direct deletion. Configure the same protection semantically if another Git
-provider is later used.
+The desired configuration for `main`, `dev-user`, and `dev-agent` is: require
+pull requests, at least one human approval, up-to-date required checks once CI
+exists, no force pushes, and no direct deletion. Configure the same protection
+semantically if another Git provider is later used.
+
+At repository bootstrap, GitHub rejected this configuration for the private
+repository because the current account plan does not support private-repository
+branch protection. Until the account plan or repository visibility changes, the
+rules in `AGENTS.md` are mandatory procedural controls and only the human
+maintainer's GitHub credential may have write access. See ADR 0001. Re-attempt
+technical protection before authorizing automated execution in Phase C.
 
 ## Commit rules
 
