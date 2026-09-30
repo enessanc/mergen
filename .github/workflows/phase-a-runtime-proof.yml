@@ -1,0 +1,31 @@
+name: Phase A runtime proof
+
+on:
+  push:
+    branches: [dev-agent]
+  pull_request:
+    branches: [dev-user]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpp-cmake-runtime-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the non-root runtime image
+        run: docker build --tag mergen/cpp-cmake:0.1 infrastructure/docker/cpp-cmake
+      - name: Verify image user and absence of Docker socket
+        run: |
+          test "$(docker image inspect --format '{{.Config.User}}' mergen/cpp-cmake:0.1)" = "10001:10001"
+          docker run --rm --init --user 10001:10001 --read-only --tmpfs /tmp:rw,exec,nosuid,nodev,size=512m --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --entrypoint /bin/sh mergen/cpp-cmake:0.1 -c 'test "$(id -u)" = 10001 && test ! -e /var/run/docker.sock'
+      - name: Run successful validation with limits
+        run: docker run --rm --init --user 10001:10001 --read-only --tmpfs /tmp:rw,exec,nosuid,nodev,size=512m --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --cpus 2 --memory 4g --volume "$PWD/infrastructure/docker/proof-project:/workspace:ro" mergen/cpp-cmake:0.1
+      - name: Verify intentional validation failure
+        run: |
+          if docker run --rm --init --user 10001:10001 --read-only --tmpfs /tmp:rw,exec,nosuid,nodev,size=512m --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --cpus 2 --memory 4g --env MERGEN_PROOF_FAIL=1 --volume "$PWD/infrastructure/docker/proof-project:/workspace:ro" mergen/cpp-cmake:0.1; then
+            echo "intentional validation failure unexpectedly passed" >&2
+            exit 1
+          fi

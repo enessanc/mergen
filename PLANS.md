@@ -67,6 +67,8 @@ limits; run non-root; confirm no privileged mode or Docker socket is needed.
 **Exit:** destroying and recreating the container loses no required source
 state. Do not add Kubernetes, Plane, or custom UI work in this phase.
 
+**Evidence:** [Phase A verification record](docs/evidence/phase-a.md) — passed.
+
 ## Phase B — Kubernetes/K3s Job proof
 
 **Objective:** represent the proven runtime as a disposable Kubernetes Job.
@@ -82,6 +84,8 @@ Kubernetes administrative credential is required.
 
 **Exit:** an entire disposable task is represented by Job/Pod lifecycle. Do not
 introduce Helm, operators, service mesh, or production multi-node scope.
+
+**Evidence:** [Phase B verification record](docs/evidence/phase-b.md) — passed.
 
 ## Phase C — Mergen Core skeleton
 

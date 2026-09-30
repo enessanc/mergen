@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: runtime-proof-failure
+  namespace: mergen-runtime-proof
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 120
+  ttlSecondsAfterFinished: 15
+  template:
+    spec:
+      automountServiceAccountToken: false
+      serviceAccountName: mergen-runtime-proof
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: runtime-proof
+          image: mergen/k3s-cpp-cmake-proof:0.1
+          imagePullPolicy: Never
+          env:
+            - name: MERGEN_PROOF_FAIL
+              value: "1"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: workspace
+              mountPath: /tmp
+      volumes:
+        - name: workspace
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
